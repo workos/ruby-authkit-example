@@ -35,7 +35,7 @@ helpers do
       redirect "/login" if !result[:authenticated]
       response.set_cookie("wos_session", value: result[:sealed_session], httponly: true, secure: true, samesite: "lax")
       redirect request.url
-    rescue StandardError => e
+    rescue e
       puts e
       response.delete_cookie("wos_session")
       redirect "/login"
@@ -51,7 +51,6 @@ get "/" do
 end
 
 get "/login" do
-  puts "wat #{ENV['WORKOS_REDIRECT_URI']}"
   authorization_url = WorkOS::UserManagement.authorization_url(
     provider: "authkit",
     client_id: client_id,
@@ -68,13 +67,16 @@ get "/callback" do
     auth_response = WorkOS::UserManagement.authenticate_with_code(
       client_id: client_id,
       code: code,
-      session: { :seal_session => true, :cookie_password => cookie_password }
+      session: {
+        seal_session: true,
+        cookie_password: cookie_password
+      }
     )
 
     # store the session in a cookie
     response.set_cookie("wos_session", value: auth_response.sealed_session, httponly: true, secure: true, samesite: "lax")
     redirect "/"
-  rescue StandardError => e
+  rescue e
     puts e
     redirect "/login"
   end
