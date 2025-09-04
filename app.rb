@@ -35,7 +35,7 @@ helpers do
       redirect "/login" if !result[:authenticated]
       response.set_cookie("wos_session", value: result[:sealed_session], httponly: true, secure: true, samesite: "lax")
       redirect request.url
-    rescue e
+    rescue => e
       puts e
       response.delete_cookie("wos_session")
       redirect "/login"
@@ -76,7 +76,7 @@ get "/callback" do
     # store the session in a cookie
     response.set_cookie("wos_session", value: auth_response.sealed_session, httponly: true, secure: true, samesite: "lax")
     redirect "/"
-  rescue e
+  rescue => e
     puts e
     redirect "/login"
   end
